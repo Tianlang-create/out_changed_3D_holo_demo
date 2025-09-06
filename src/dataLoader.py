@@ -4,7 +4,6 @@ import numpy as np
 import os
 from imageio import imread
 import random
-# import train
 
 global epoch_num
 epoch_num = 0

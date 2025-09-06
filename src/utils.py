@@ -205,7 +205,10 @@ def get_psnr_ssim(recon_amp, target_amp, multichannel=False):
     target_srgb = srgb_lin2gamma(np.clip(target_linear, 0.0, 1.0))
     recon_srgb = srgb_lin2gamma(np.clip(recon_linear, 0.0, 1.0))
     psnrs = psnr(target_srgb, recon_srgb)
-    ssims = ssim(target_srgb, recon_srgb, channel_axis=multichannel)
+    
+    # Convert multichannel boolean to channel_axis for skimage compatibility
+    channel_axis = -1 if multichannel else None
+    ssims = ssim(target_srgb, recon_srgb, channel_axis=channel_axis, data_range=1.0)
 
     return psnrs, ssims
 
@@ -330,7 +333,7 @@ def log_write(logger,opt):
     
 
 
-#归一化
+#???
 def normalize(x):
     x = x - x.min()
     x = x / x.max()
