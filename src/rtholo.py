@@ -3,6 +3,7 @@ from propagation_ASM import *
 from NET1 import NET1
 from CNN import *
 from CNN_PP import *
+from alft import AdaptiveLightFieldTuner
 from rich.progress import track
 
 
@@ -10,7 +11,7 @@ from rich.progress import track
 class rtholo(nn.Module):
 
     def __init__(self,size, mode = 'train', feature_size = 7.48e-6, distance_range = 0.03, 
-                 img_distance = 0.2,layers_num = 30,num_layers = 10, num_filters_per_layer=15, CNNPP = False):
+                 img_distance = 0.2,layers_num = 30,num_layers = 10, num_filters_per_layer=15, CNNPP = False, use_alft: bool = True):
         super().__init__()
 
         self.network1 = NET1()
@@ -29,6 +30,9 @@ class rtholo(nn.Module):
         self.distance_range = distance_range
         self.layers_num = layers_num
         self.img_distance = img_distance
+        self.use_alft = use_alft
+        if self.use_alft:
+            self.alft = AdaptiveLightFieldTuner()
 
         print('====================================================')
         print('network1:{}'.format(self.network1.__class__.__name__))
@@ -81,10 +85,15 @@ class rtholo(nn.Module):
         
         
         holo = self.network2(slm_field)
+        # ---- ALFT phase tuning ----
+        if self.use_alft:
+            # Ô´ÊäÈëÍ¨µÀÔ¼¶¨: 0-Õñ·ù,1-Éî¶È
+            depth_in = source[:,1:2,:,:]
+            holo = self.alft(holo, depth_in)
         
         if self.mode == 'train':
             H_real, H_imag = polar_to_rect(torch.ones(holo.shape).cuda(), holo)
-            #                              å¯¹æŒ¯å¹…è¿›è¡Œé™åˆ¶ï¼Œåªä¿ç•™ç›¸ä½ä¿¡æ¯
+            #                              ¶ÔÕñ·ù½øĞĞÏŞÖÆ£¬Ö»±£ÁôÏàÎ»ĞÅÏ¢
             holo_field = torch.complex(H_real, H_imag)
 
             distance = (0-self.distance_range)/self.layers_num*ikk
