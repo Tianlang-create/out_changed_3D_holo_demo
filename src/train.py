@@ -55,7 +55,10 @@ p.add_argument("--stepLR", action="store_true", help="Use step learning rate")
 p.add_argument("--stepLR_step_size", type=int, default=1, help="stepLR step size")
 p.add_argument("--stepLR_step_gamma", type=float, default=0.8, help="stepLR step gamma")
 p.add_argument("--CNNPP", action="store_true", help="Use CNNPP")
-
+# 新增：可选禁用ALFT模块的开关，默认启用
+p.add_argument("--no_alft", dest="use_alft", action="store_false", help="Disable ALFT module (Adaptive Light Field Tuner)")
+# 默认启用ALFT
+p.set_defaults(use_alft=True)
 
 #!??????????
 p.add_argument("--p_loss", action="store_true", help="Use perceptual loss")
@@ -140,6 +143,7 @@ rtholo = rtholo(
     num_filters_per_layer=opt.num_filters_per_layer,
     num_layers=opt.num_layers,
     CNNPP=opt.CNNPP,
+    use_alft=opt.use_alft,
 ).to(device)
 
 if(opt.ckpt_continue is not None):
