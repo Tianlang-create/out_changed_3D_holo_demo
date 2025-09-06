@@ -31,23 +31,23 @@ import shutil
 # Command line argument processing
 p = configargparse.ArgumentParser()
 p.add_argument("-c","--config_filepath",required=False,is_config_file=True,help="Path to config file.")
-p.add_argument("--run_id", type=str, default="CNN_test", help="Experiment name", required=False)  # ������
+p.add_argument("--run_id", type=str, default="CNN_test", help="Experiment name", required=False)  # ??????
 p.add_argument("--num_epochs", type=int, default=90, help="Number of epochs")
 p.add_argument("--size_of_miniBatches", type=int, default=1, help="Size of minibatch")
 p.add_argument("--lr", type=float, default=1e-3, help="learning rate of Holonet weights")
 p.add_argument("--save_pth", type=str, default="../save/", help="Path to data directory")
-p.add_argument("--device", type=str, default="0", help="Path to data directory")  # ������
+p.add_argument("--device", type=str, default="0", help="Path to data directory")  # ??????
 p.add_argument("--layer_num", type=int, default=30, help="Number of layers")
 p.add_argument("--distance_range", type=float, default=0.03, help="Distance range")
 p.add_argument("--img_distance", type=float, default=0.2, help="Distance range")
 p.add_argument("--dataset_average", action="store_true", help="Dataset_average")
 p.add_argument("--log_path", type=str, default="../log/", help="Path to data directory")
-p.add_argument("--img_size", type=int, default=1024, help="Size of image")  # ������
-p.add_argument("--data_path", type=str, default="../mit-4k", help="���ݼ�·��")
-p.add_argument("--feature_size", type=float, default=7.48e-6, help="base channel of U-Net")  # ������
-p.add_argument("--num_layers", type=int, default=10, help="Number of layers")  # ������
-p.add_argument("--num_filters_per_layer", type=int, default=15, help="Number of filters per layer")  # ������
-p.add_argument("--base_channel", type=int, default=64, help="�������ͨ����")  
+p.add_argument("--img_size", type=int, default=1024, help="Size of image")  # ??????
+p.add_argument("--data_path", type=str, default="../mit-4k", help="?????��??")
+p.add_argument("--feature_size", type=float, default=7.48e-6, help="base channel of U-Net")  # ??????
+p.add_argument("--num_layers", type=int, default=10, help="Number of layers")  # ??????
+p.add_argument("--num_filters_per_layer", type=int, default=15, help="Number of filters per layer")  # ??????
+p.add_argument("--base_channel", type=int, default=64, help="????????????")  
 
 p.add_argument("--cosineLR", action="store_true", help="Use cosine learning rate")
 p.add_argument("--cosineWarm", action="store_true", help="Use cosine warm learning rate")
@@ -57,14 +57,14 @@ p.add_argument("--stepLR_step_gamma", type=float, default=0.8, help="stepLR step
 p.add_argument("--CNNPP", action="store_true", help="Use CNNPP")
 
 
-#!��ʧ����ѡ��
+#!??????????
 p.add_argument("--p_loss", action="store_true", help="Use perceptual loss")
 p.add_argument("--f_loss", action="store_true", help="Use focal frequency loss")
 p.add_argument("--ms_loss", action="store_true", help="Use ms_ssim loss")
 p.add_argument("--l1_loss", action="store_true", help="Use L1 loss")
 p.add_argument("--l2_loss", action="store_true", help="Use L2 loss")
 
-#!��ʧ����Ȩ��
+#!??????????
 p.add_argument("--p_loss_weight", type=float, default=1.0, help="perceptual loss weight")
 p.add_argument("--f_loss_weight", type=float, default=1.0, help="focal frequency loss weight")
 p.add_argument("--ms_loss_weight", type=float, default=1.0, help="ms_ssim loss weight")
@@ -197,7 +197,7 @@ for i in range(opt.num_epochs):
         amp, depth, mask, ikk = target
         ikk_probability[ikk] += 1
         amp, depth, mask = amp.to(device), depth.to(device), mask.to(device)
-        source = torch.cat([amp, depth], dim=-3)  # ������������
+        source = torch.cat([amp, depth], dim=-3)  # ????????????
 
         optimizer.zero_grad()
 
@@ -215,7 +215,7 @@ for i in range(opt.num_epochs):
         amp_i = amp_i.repeat(1, 3, 1, 1)
 
         if ik % 100 == 0:
-            # ����ͼ��1920x1080
+            # ???????1920x1080
             target_size = (1920, 1080)
             
             out_amp_resized = cv2.resize(normalize(output_amp_save[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
