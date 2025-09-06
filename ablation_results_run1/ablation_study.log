@@ -1,3 +1,16 @@
 INFO:root:Using device: cuda
 INFO:root:Running experiment: baseline
-Running experiment: baseline
+INFO:root:baseline - PSNR: 4.9891 +/- 0.0000, SSIM: 0.0144 +/- 0.0000
+INFO:root:Running experiment: no_p_loss
+INFO:root:no_p_loss - PSNR: 4.9891 +/- 0.0000, SSIM: 0.0144 +/- 0.0000
+INFO:root:Running experiment: no_f_loss
+INFO:root:no_f_loss - PSNR: 4.9891 +/- 0.0000, SSIM: 0.0144 +/- 0.0000
+INFO:root:Running experiment: no_ms_loss
+INFO:root:no_ms_loss - PSNR: 4.9891 +/- 0.0000, SSIM: 0.0144 +/- 0.0000
+INFO:root:Running experiment: no_l1_loss
+INFO:root:no_l1_loss - PSNR: 4.9891 +/- 0.0000, SSIM: 0.0144 +/- 0.0000
+INFO:root:Running experiment: no_l2_loss
+INFO:root:no_l2_loss - PSNR: 4.9891 +/- 0.0000, SSIM: 0.0144 +/- 0.0000
+INFO:root:Ablation study completed successfully!
+ +/- 0.0000
+Ablation study completed successfully!

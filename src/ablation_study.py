@@ -111,8 +111,11 @@ def evaluate_model(model, dataloader, experiment_config, device, num_samples, ou
             input_data = torch.cat([amp, depth], dim=1)
             holo, recon_amp, slm_amp = model(input_data, 0)
             
+            # 取第一通道并去除批维，确保尺寸满足 SSIM 要求
+            recon_np = recon_amp[0, 0].cpu().numpy()
+            target_np = target_amp[0, 0].cpu().numpy()
             # Calculate metrics
-            psnr, ssim_val = get_psnr_ssim(recon_amp.cpu().numpy(), target_amp.cpu().numpy())
+            psnr, ssim_val = get_psnr_ssim(recon_np, target_np)
             
             psnr_values.append(psnr)
             ssim_values.append(ssim_val)
