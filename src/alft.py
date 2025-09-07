@@ -3,23 +3,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class AdaptiveLightFieldTuner(nn.Module):
-    """¼ò»¯°æ×ÔÊÊÓ¦¹â³¡µ÷Ğ³Ä£¿é(ALFT)¡£
-    Í¨¹ı³¡¾°Éî¶ÈÌØÕ÷¶¯Ì¬µ÷ÕûÈ«Ï¢ÏàÎ»£¬ÌáÉıÑÜÉäĞ§ÂÊ¡£"""
+    """è‡ªé€‚åº”å…‰åœºè°ƒè°å™¨(ALFT)
+    é€šè¿‡æ·±åº¦ä¿¡æ¯åŠ¨æ€è°ƒæ•´ç›¸ä½ä¿¡æ¯ï¼Œä¼˜åŒ–æˆåƒæ•ˆæœã€‚"""
 
     def __init__(self, init_alpha: float = 0.5):
         super().__init__()
-        # µ¥Ò»¿ÉÑ§Ï°ÔöÒæ£¬³õÖµ 0.5£¬¿É¸ù¾İÑµÁ·×Ô¶¯µ÷Õû
+        # å¯å­¦ä¹ å‚æ•°ï¼Œåˆå§‹å€¼0.5ï¼Œèƒ½å¤Ÿé€šè¿‡è®­ç»ƒè‡ªåŠ¨è°ƒæ•´
         self.alpha = nn.Parameter(torch.tensor(init_alpha))
 
-        # Éî¶ÈÍ¨µÀÓ³Éäµ½ÔöÒæÏµÊı£¬Ê¹ÓÃÇáÁ¿ 1¡Á1 ¾í»ı
+        # å°†æ·±åº¦æ˜ å°„åˆ°æƒé‡ç³»æ•°ï¼Œä½¿ç”¨1x1å·ç§¯
         self.depth_proj = nn.Conv2d(1, 1, kernel_size=1)
 
     def forward(self, phase: torch.Tensor, depth: torch.Tensor) -> torch.Tensor:
-        """ÊäÈëÏàÎ»ÓëÉî¶ÈÍ¼£¬Êä³öµ÷Ğ³ºóµÄÏàÎ»¡£"""
-        # depth ¹éÒ»»¯µ½ [0,1]
+        """æ ¹æ®ç›¸ä½å›¾å’Œæ·±åº¦å›¾è¿›è¡Œè°ƒè°å¾—åˆ°æ–°ç›¸ä½"""
+        # å°†æ·±åº¦å½’ä¸€åŒ–åˆ°[0,1]èŒƒå›´
         depth_norm = (depth - depth.min()) / (depth.max() - depth.min() + 1e-6)
         depth_gain = torch.sigmoid(self.depth_proj(depth_norm))  # (B,1,H,W)
-        tuned_phase = phase + self.alpha * (depth_gain - 0.5)  # µ÷ÖÆÏàÎ»
-        # wrap to [-pi,pi]
+        tuned_phase = phase + self.alpha * (depth_gain - 0.5)  # è°ƒæ•´ç›¸ä½
+        # å°†ç›¸ä½åŒ…è£¹åˆ°[-pi,pi]èŒƒå›´
         tuned_phase = torch.remainder(tuned_phase + torch.pi, 2 * torch.pi) - torch.pi
         return tuned_phase
