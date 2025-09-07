@@ -63,7 +63,7 @@ p.add_argument("--img_distance", type=float, default=0.2, help="Distance range")
 p.add_argument("--dataset_average", action="store_true", help="Dataset_average")
 p.add_argument("--log_path", type=str, default="../log/", help="Path to data directory")
 p.add_argument("--img_size", type=int, default=1024, help="Size of image")  # ??????
-p.add_argument("--data_path", type=str, default="../mit-4k", help="?????¡¤??")
+p.add_argument("--data_path", type=str, default="../mit-4k", help="?????ï¿½ï¿½??")
 p.add_argument("--feature_size", type=float, default=7.48e-6, help="base channel of U-Net")  # ??????
 p.add_argument("--num_layers", type=int, default=10, help="Number of layers")  # ??????
 p.add_argument("--num_filters_per_layer", type=int, default=15, help="Number of filters per layer")  # ??????
@@ -75,9 +75,9 @@ p.add_argument("--stepLR", action="store_true", help="Use step learning rate")
 p.add_argument("--stepLR_step_size", type=int, default=1, help="stepLR step size")
 p.add_argument("--stepLR_step_gamma", type=float, default=0.8, help="stepLR step gamma")
 p.add_argument("--CNNPP", action="store_true", help="Use CNNPP")
-# ÐÂÔö£º¿ÉÑ¡½ûÓÃALFTÄ£¿éµÄ¿ª¹Ø£¬Ä¬ÈÏÆôÓÃ
+# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ALFTÄ£ï¿½ï¿½Ä¿ï¿½ï¿½Ø£ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 p.add_argument("--no_alft", dest="use_alft", action="store_false", help="Disable ALFT module (Adaptive Light Field Tuner)")
-# Ä¬ÈÏÆôÓÃALFT
+# Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ALFT
 p.set_defaults(use_alft=True)
 
 
@@ -237,7 +237,7 @@ for i in range(opt.num_epochs):
         amp_i = amp_i.repeat(1, 3, 1, 1)
 
         if ik % 100 == 0:
-            # ???????1920x1080
+
             target_size = (1920, 1080)
             
             out_amp_resized = cv2.resize(normalize(output_amp_save[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
