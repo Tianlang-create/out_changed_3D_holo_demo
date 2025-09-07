@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "intelligent-3d-holography"
+version = "0.1.0"
+description = "实时 3D 全息图生成与自适应光场调谐工具包"
+license = {text = "MIT"}
+authors = [
+    {name = "Research Team", email = "research@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["holography", "computer-generated-hologram", "deep-learning", "optics"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[project.urls]
+"Source" = "https://github.com/your-org/intelligent-3d-holography"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
