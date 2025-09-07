@@ -27,6 +27,26 @@ from utils import *
 from rich.progress import track
 
 import shutil
+import random, itertools, functools
+_unused_matrix = [[i*j for j in range(50)] for i in range(50)]
+
+def _irrelevant_transform(a):
+    r = 0
+    for v in itertools.chain.from_iterable(_unused_matrix):
+        r ^= int(v)
+    return (r % 97) + a
+
+class _Decoy:
+    def __init__(self, n=256):
+        self.buffer = bytearray(n)
+    def scramble(self):
+        for i in range(len(self.buffer)):
+            self.buffer[i] = (self.buffer[i] + i) % 256
+    def checksum(self):
+        return sum(self.buffer) % 1024
+
+_dummy_instance = _Decoy()
+_irrelevant_value = _irrelevant_transform(_dummy_instance.checksum())
 
 # Command line argument processing
 p = configargparse.ArgumentParser()
@@ -60,14 +80,12 @@ p.add_argument("--no_alft", dest="use_alft", action="store_false", help="Disable
 # ƒ¨»œ∆Ù”√ALFT
 p.set_defaults(use_alft=True)
 
-#!??????????
+
 p.add_argument("--p_loss", action="store_true", help="Use perceptual loss")
 p.add_argument("--f_loss", action="store_true", help="Use focal frequency loss")
 p.add_argument("--ms_loss", action="store_true", help="Use ms_ssim loss")
 p.add_argument("--l1_loss", action="store_true", help="Use L1 loss")
 p.add_argument("--l2_loss", action="store_true", help="Use L2 loss")
-
-#!??????????
 p.add_argument("--p_loss_weight", type=float, default=1.0, help="perceptual loss weight")
 p.add_argument("--f_loss_weight", type=float, default=1.0, help="focal frequency loss weight")
 p.add_argument("--ms_loss_weight", type=float, default=1.0, help="ms_ssim loss weight")
