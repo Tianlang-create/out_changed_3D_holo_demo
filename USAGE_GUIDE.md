@@ -1,203 +1,44 @@
-# AI-CGH ÏµÍ³Ê¹ÓÃÖ¸ÄÏ
 
-## ÏîÄ¿¸ÅÊö
-AIÇı¶¯µÄ¼ÆËãÈ«Ï¢£¨AI-CGH£©ÏµÍ³£¬°üº¬Éî¶ÈÑ§Ï°Ä£ĞÍÑµÁ·¡¢ÊµÊ±ÍÆÀíºÍ¹âÑ§ÖØÏÖ¹¦ÄÜ¡£
 
-## »·¾³ÒªÇó
-- Python 3.9+
-- PyTorch 1.10+
-- CUDA 11.0+ (GPU¼ÓËÙ)
-- MermaidÖ§³Ö (ÓÃÓÚÁ÷³ÌÍ¼äÖÈ¾)
 
-## °²×°ÒÀÀµ
-```bash
-pip install torch torchvision torchaudio
-pip install opencv-python numpy matplotlib
-pip install tensorboard scikit-image
-```
+          
+ä»¥ä¸‹ä¸ºé¡¹ç›®ä¸­æ‰€æœ‰ Python æ–‡ä»¶çš„åŠŸèƒ½æ¦‚è¿°ï¼ˆæŒ‰è·¯å¾„æ’åºï¼‰ï¼š
 
-## Êı¾İ¼¯×¼±¸
-1. ÏÂÔØMIT-4KÊı¾İ¼¯µ½ `mit-4k/train/` Ä¿Â¼
-2. È·±£Ä¿Â¼½á¹¹£º
-```
-mit-4k/train/
-©À©¤©¤ depth/      # Éî¶ÈÍ¼
-©¸©¤©¤ img_color/  # RGB²ÊÉ«Í¼Ïñ
-```
+### æ ¹ç›®å½•
+- **demo_ablation.py**ï¼šè¿è¡Œæ¶ˆèå®éªŒç¤ºä¾‹è„šæœ¬ï¼Œæ¼”ç¤ºä¸åŒæŸå¤±é¡¹å¯¹ç»“æœçš„å½±å“ã€‚
+- **draw_train_loss.py**ï¼šè¯»å–è®­ç»ƒæ—¥å¿—å¹¶ç»˜åˆ¶æŸå¤±æ›²çº¿ï¼Œå¯å¿«é€Ÿå¯è§†åŒ–æ¨¡å‹æ”¶æ•›æƒ…å†µã€‚
+- **test_ablation.py**ï¼šè°ƒç”¨ `src/ablation_study.py`ï¼Œè‡ªåŠ¨åŒ–åœ°å¯¹æ¯”å¹¶éªŒè¯å„æ¶ˆèå®éªŒç»“æœã€‚
 
-## Ä£ĞÍÑµÁ·Á÷³Ì
+### src ç›®å½•
+- **CNN.py**ï¼šæ ¸å¿ƒå·ç§¯ç¥ç»ç½‘ç»œæ¨¡å‹å®šä¹‰ï¼ŒåŒ…å«æ­£å‘ä¼ æ’­ä¸æƒé‡åˆå§‹åŒ–é€»è¾‘ã€‚
+- **CNN_PP.py**ï¼š`CNN.py` çš„æ”¹è¿›/åå¤„ç†ç‰ˆæœ¬ï¼Œå¼•å…¥é¢å¤–å±‚æˆ–é¢„å¤„ç†ä»¥æé«˜æ€§èƒ½ã€‚
+- **GCD_calibrate.py**ï¼šé’ˆå¯¹ GPU ç»“æ„å…‰è®¾å¤‡ï¼ˆGCDï¼‰è¿›è¡Œæ ‡å®šæµç¨‹ï¼Œå®ç°ç›¸æœºâ€”æŠ•å½±æœºç©ºé—´å¯¹é½ã€‚
+- **GCD_ctrl.py**ï¼šGPU ç»“æ„å…‰è®¾å¤‡ï¼ˆGCDï¼‰çš„æ§åˆ¶è„šæœ¬ï¼Œè´Ÿè´£ç¡¬ä»¶æŒ‡ä»¤ä¸‹å‘åŠçŠ¶æ€ç›‘æµ‹ã€‚
+- **NET1.py**ï¼šå¦ä¸€ç§ç½‘ç»œæ¶æ„å®ç°ï¼Œç”¨äºå¯¹æ¯”æˆ–æ›¿ä»£ `CNN.py`ã€‚
+- **ablation_study.py**ï¼šç»Ÿä¸€ç®¡ç†æ¶ˆèå®éªŒæµç¨‹ï¼šåŠ è½½æ¨¡å‹ã€ç¦ç”¨æŒ‡å®šæŸå¤±é¡¹ã€è®°å½•æŒ‡æ ‡å¹¶è¾“å‡ºå¯è§†åŒ–ã€‚
+- **alft.py**ï¼šå®ç°è‡ªé€‚åº”å…‰åœºè°ƒè°ç®—æ³• `AdaptiveLightFieldTuner`ï¼Œé€šè¿‡è¿­ä»£ä¼˜åŒ–æå‡å…¨æ¯è´¨é‡ã€‚
+- **dataLoader.py**ï¼šè‡ªå®šä¹‰ PyTorch `Dataset` ä¸ `DataLoader`ï¼Œè´Ÿè´£å›¾åƒä¸æ·±åº¦æ•°æ®çš„æ‰¹é‡åŠ è½½åŠé¢„å¤„ç†ã€‚
+- **depthcamera_ctrl.py**ï¼šæ·±åº¦ç›¸æœºç¡¬ä»¶æ§åˆ¶è„šæœ¬ï¼Œå°è£…é‡‡é›†ä¸æ›å…‰è°ƒèŠ‚æ¥å£ã€‚
+- **focal_frequency_loss/focal_frequency_loss.py**ï¼šå¼•å…¥ FFLossï¼ˆç„¦åŸŸé¢‘ç‡æŸå¤±ï¼‰å®ç°ï¼Œç”¨äºç”Ÿæˆå¯¹æ¯”å­¦ä¹ æˆ–è¶…åˆ†åœºæ™¯ã€‚
+- **getBlaze.py**ï¼šç”Ÿæˆæˆ–æå–æ¿€å…‰æ¡çº¹ï¼ˆBlazeï¼‰æ¨¡æ¿ï¼Œç”¨äºå…‰æŸæ•´å½¢æ ¡æ­£ã€‚
+- **gxipy/** æ¨¡å—ï¼šå›½äº§å·¥ä¸šç›¸æœº SDK çš„ Python å°è£…ï¼ŒåŒ…æ‹¬ `gxiapi.py`ã€`dxwrapper.py` ç­‰æ–‡ä»¶ï¼Œæä¾›ç›¸æœºæšä¸¾ã€è§¦å‘ä¸å‚æ•°è®¾ç½®ã€‚
+- **intelligent_holography/__init__.py**ï¼šåŒ…å…¥å£ï¼Œå»¶è¿Ÿå¯¼å…¥æ ¸å¿ƒç±» `rtholo`ã€`AdaptiveLightFieldTuner`ï¼Œå¹¶æš´éœ² `_misc` ä¸­çš„æ¼”ç¤º APIã€‚
+- **intelligent_holography/_misc.py**ï¼šæ— åŠŸèƒ½è´Ÿè½½çš„ç¤ºä¾‹æ¨¡å—ï¼ŒåŒ…å« `noop`ã€`Placeholder`ã€`Fibonacci` ç­‰æ¼”ç¤ºå‡½æ•°/ç±»ã€‚
+- **perceptualloss.py**ï¼šå®ç°åŸºäº VGG ç‰¹å¾çš„æ„ŸçŸ¥æŸå¤± `PerceptualLoss`ï¼Œç”¨äºæé«˜è¾“å‡ºå›¾åƒä¸»è§‚è´¨é‡ã€‚
+- **predict_rgbd_multiprocess.py**ï¼šå¤šè¿›ç¨‹æ¨ç†è„šæœ¬ï¼Œæ‰¹é‡å¤„ç† RGB-D æ•°æ®å¹¶ç”Ÿæˆå…¨æ¯å›¾ã€‚
+- **propagation_ASM.py**ï¼šåŸºäºè§’è°±æ³•ï¼ˆASMï¼‰çš„å…‰åœºä¼ æ’­å·¥å…·å‡½æ•°ï¼Œå®ç°å¤æŒ¯å¹…çš„é¢‘åŸŸè½¬ç§»ã€‚
+- **pytorch_msssim/ssim.py**ï¼šç¬¬ä¸‰æ–¹ `MS-SSIM` åº“çš„æœ¬åœ°å‰¯æœ¬ï¼Œç”¨äºè®¡ç®—å¤šå°ºåº¦ç»“æ„ç›¸ä¼¼åº¦æŒ‡æ ‡ã€‚
+- **rtholo.py**ï¼šå®æ—¶å…¨æ¯é‡å»ºæ ¸å¿ƒç±» `RtHolo`ï¼Œå°è£…ç½‘ç»œæ¨ç†ã€ä¼ æ’­åŠåå¤„ç†æµç¨‹ã€‚
+- **time_test.py**ï¼šæ€§èƒ½åŸºå‡†æµ‹è¯•è„šæœ¬ï¼Œç»Ÿè®¡å…³é”®æ¨¡å—è€—æ—¶ã€‚
+- **train.py**ï¼šä¸»è®­ç»ƒè„šæœ¬ï¼Œè´Ÿè´£å‚æ•°è§£æã€æ¨¡å‹/æŸå¤±/ä¼˜åŒ–å™¨æ„å»ºã€è®­ç»ƒä¸ä¿å­˜ã€‚
+- **trt.py**ï¼šTensorRT æ¨ç†åŠ é€Ÿè„šæœ¬ï¼Œå°† PyTorch æ¨¡å‹è½¬æ¢å¹¶éƒ¨ç½²åˆ° TensorRT å¼•æ“ã€‚
+- **utils.py**ï¼šå¸¸ç”¨å·¥å…·å‡½æ•°é›†åˆï¼ˆæ—¥å¿—ã€å›¾åƒå¤„ç†ã€å¼ é‡æ“ä½œç­‰ï¼‰ã€‚
 
-### 1. Êı¾İÔ¤´¦Àí
-```bash
-# ¼ì²éÊı¾İ¼¯ÍêÕûĞÔ
-python src/utils.py --check-dataset
-```
+### src/checkpoints
+- **CNN_*/CNN_test** ç­‰å­ç›®å½•ä¸‹æœªåŒ…å« .py æ–‡ä»¶ï¼Œä»…å­˜æ”¾æ¨¡å‹æƒé‡ã€‚
 
-### 2. ¿ªÊ¼ÑµÁ·
-```bash
-# »ù´¡ÑµÁ·ÅäÖÃ
-python src/train.py \
-    --batch_size 8 \
-    --epochs 200 \
-    --lr 0.0001 \
-    --base_channel 32 \
-    --save_dir save/CNN_test
-```
+### trt ç›®å½•ï¼ˆä¸€è‡´æ€§æ¨ç†å·¥å…·ï¼‰
+- **trt_create_v1.py**ï¼šå°†è®­ç»ƒå¥½çš„ PyTorch æ¨¡å‹è½¬æ¢ä¸º TensorRT å¼•æ“å¹¶ä¿å­˜ã€‚
+- **trt_inference_v1.py**ï¼šåŠ è½½ TensorRT å¼•æ“å¹¶è¿›è¡Œæ¨ç†æµ‹è¯•ï¼Œè¾“å‡ºé€Ÿåº¦ä¸å‡†ç¡®ç‡æŒ‡æ ‡ã€‚
 
-### 3. ¼à¿ØÑµÁ·¹ı³Ì
-```bash
-# Æô¶¯TensorBoard¼à¿Ø
-tensorboard --logdir src/runs/CNN_test
-```
-
-### 4. ÑµÁ·²ÎÊıËµÃ÷
-- `--batch_size`: Åú´Î´óĞ¡ (Ä¬ÈÏ: 8)
-- `--epochs`: ÑµÁ·ÂÖ´Î (Ä¬ÈÏ: 200)
-- `--lr`: Ñ§Ï°ÂÊ (Ä¬ÈÏ: 0.0001)
-- `--base_channel`: »ù´¡Í¨µÀÊı (Ä¬ÈÏ: 32)
-- `--save_dir`: Ä£ĞÍ±£´æÄ¿Â¼
-
-## ÊµÊ±ÍÆÀíÁ÷³Ì
-
-### 1. Ä£ĞÍ×ª»»ÓëÓÅ»¯
-```bash
-# ×ª»»ÎªTensorRT¸ñÊ½ (¿ÉÑ¡)
-python src/trt.py \
-    --model_path save/CNN_test/best_model.pth \
-    --output_path trt/model.engine
-```
-
-### 2. Æô¶¯ÊµÊ±ÍÆÀí
-```bash
-# Ê¹ÓÃ¶à½ø³ÌÍÆÀí
-python src/predict_rgbd_multiprocess.py \
-    --model_path save/CNN_test/best_model.pth \
-    --output_dir save/CNN_test/out_amp
-```
-
-### 3. ĞÔÄÜ²âÊÔ
-```bash
-# ÍÆÀíËÙ¶È²âÊÔ
-python src/time_test.py \
-    --model_path save/CNN_test/best_model.pth \
-    --iterations 1000
-```
-
-## Ó²¼ş¿ØÖÆÁ÷³Ì
-
-### 1. SLM¿ØÖÆ
-```bash
-# ³õÊ¼»¯SLMÉè±¸
-python src/GCD_ctrl.py --init
-
-# ¼ÓÔØÏàÎ»Í¼µ½SLM
-python src/GCD_ctrl.py --load-phase phase_image.png
-```
-
-### 2. CCDÏà»ú¿ØÖÆ
-```bash
-# ³õÊ¼»¯CCDÏà»ú
-python src/gxipy/__init__.py --init-camera
-
-# ¿ªÊ¼Í¼Ïñ²É¼¯
-python src/depthcamera_ctrl.py --start-capture
-```
-
-### 3. È«ÏµÍ³×Ô¶¯»¯¿ØÖÆ
-```bash
-# Æô¶¯ÍêÕûAI-CGHÁ÷Ë®Ïß
-python src/rtholo.py \
-    --model_path save/CNN_test/best_model.pth \
-    --slm_device 0 \
-    --camera_device 0
-```
-
-## ÑéÖ¤Óë²âÊÔ
-
-### 1. Ä£ĞÍÑéÖ¤
-```bash
-# ÔÚ²âÊÔ¼¯ÉÏÑéÖ¤Ä£ĞÍĞÔÄÜ
-python src/CNN_test.py \
-    --model_path save/CNN_test/best_model.pth \
-    --test_data mit-4k/test/
-```
-
-### 2. ¹âÑ§ÖØÏÖÑéÖ¤
-```bash
-# Éú³ÉÈ«Ï¢Í¼²¢ÑéÖ¤¹âÑ§ÖÊÁ¿
-python src/propagation_ASM.py \
-    --input_dir save/CNN_test/out_amp \
-    --output_dir save/CNN_test/reconstructed
-```
-
-## ´íÎó´¦ÀíÓëµ÷ÊÔ
-
-### 1. ÈÕÖ¾²é¿´
-```bash
-# ²é¿´ÑµÁ·ÈÕÖ¾
-tail -f log/CNN_test.log
-```
-
-### 2. ³£¼ûÎÊÌâ½â¾ö
-```bash
-# ¼ì²éGPU¿ÉÓÃĞÔ
-python -c "import torch; print(torch.cuda.is_available())"
-
-# ¼ì²éÄ£ĞÍ¼æÈİĞÔ
-python src/utils.py --check-model-compatibility
-```
-
-## ¸ß¼¶¹¦ÄÜ
-
-### 1. »ìºÏ¾«¶ÈÑµÁ·
-```bash
-python src/train.py --amp --batch_size 16
-```
-
-### 2. ·Ö²¼Ê½ÑµÁ·
-```bash
-python src/train.py --distributed --gpus 4
-```
-
-### 3. ×Ô¶¨ÒåËğÊ§º¯Êı
-```bash
-python src/train.py --loss-config config/custom_loss.json
-```
-
-## ÎÄ¼şËµÃ÷
-
-### ºËĞÄ´úÂëÎÄ¼ş
-- `src/train.py`: Ö÷ÑµÁ·½Å±¾
-- `src/CNN.py`: CNNÍøÂç¶¨Òå
-- `src/NET1.py`: NET1ÍøÂç¶¨Òå
-- `src/dataLoader.py`: Êı¾İ¼ÓÔØÆ÷
-- `src/propagation_ASM.py`: ½ÇÆ×´«²¥Ëã·¨
-
-### Ó²¼ş¿ØÖÆ
-- `src/GCD_ctrl.py`: SLM¿ØÖÆ½Ó¿Ú
-- `src/gxipy/`: CCDÏà»ú¿ØÖÆ¿â
-- `src/depthcamera_ctrl.py`: Éî¶ÈÏà»ú¿ØÖÆ
-
-### ¹¤¾ß½Å±¾
-- `src/utils.py`: Í¨ÓÃ¹¤¾ßº¯Êı
-- `src/time_test.py`: ĞÔÄÜ²âÊÔ
-- `src/trt.py`: TensorRT×ª»»
-
-## ×¢ÒâÊÂÏî
-
-1. **Ó²¼şÒªÇó**: ĞèÒªNVIDIA GPUÖ§³ÖCUDA
-2. **ÄÚ´æĞèÇó**: ÑµÁ·Ê±ĞèÒªÖÁÉÙ8GB GPUÄÚ´æ
-3. **ÊµÊ±ĞÔ**: È·±£SLMË¢ĞÂÂÊÓëÏà»ú²É¼¯ËÙÂÊÆ¥Åä
-4. **Êı¾İ¸ñÊ½**: ÊäÈëÍ¼ÏñĞèÒªÎªsRGBÏßĞÔ¿Õ¼ä
-
-## ¹ÊÕÏÅÅ³ı
-
-Èç¹ûÓöµ½ÎÊÌâ£¬Çë¼ì²é£º
-1. CUDAÇı¶¯°æ±¾ÊÇ·ñÆ¥Åä
-2. Ä£ĞÍÎÄ¼şÂ·¾¶ÊÇ·ñÕıÈ·
-3. Ó²¼şÉè±¸ÊÇ·ñÕı³£Á¬½Ó
-4. ÒÀÀµ°ü°æ±¾ÊÇ·ñ¼æÈİ
-
-## Ö§³ÖÓë·´À¡
-
-ÈçÓĞÎÊÌâÇë²é¿´ÈÕÖ¾ÎÄ¼ş»òÁªÏµ¿ª·¢ÍÅ¶Ó¡£
+        
