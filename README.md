@@ -1,7 +1,7 @@
 # 智能3D全息实时成像系统
 
-复现：天狼  
-单位：中南大学计算机学院  
+只拿国一就行了小组 2025年9月  
+单位：中南大学物理学院 中南大学计算机学院
 
 > 本项目在公开研究成果基础上进行了工程化封装与性能优化，提供一键训练、推理与评估后期功能。
 
@@ -84,7 +84,8 @@ python predict_rgbd_multiprocess.py
 
 ## 致谢
 
-感谢**[tensor_holography](https://github.com/liangs111/tensor_holography/tree/main)**、**[HoloEncoder](https://github.com/THUHoloLab/Holo-encoder)**、**[HoloEncoder-Pytorch-Version](https://github.com/flyingwolfz/holoencoder-python-version)** 和**[Self-Holo](https://github.com/SXHyeah/Self-Holo)** 的开源。这些工作对我们的研究非常有帮助。
+感谢[tensor_holography](https://github.com/liangs111/tensor_holography/tree/main)、[HoloEncoder](https://github.com/THUHoloLab/Holo-encoder)、[HoloEncoder-Pytorch-Version](https://github.com/flyingwolfz/holoencoder-python-version)
+和[Self-Holo](https://github.com/SXHyeah/Self-Holo)的开源。这些工作对我们的研究非常有帮助。
 
 ## RGB→Depth 数据预处理
 
