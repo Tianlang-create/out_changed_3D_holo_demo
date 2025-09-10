@@ -86,6 +86,19 @@ python predict_rgbd_multiprocess.py
 
 感谢**[tensor_holography](https://github.com/liangs111/tensor_holography/tree/main)**、**[HoloEncoder](https://github.com/THUHoloLab/Holo-encoder)**、**[HoloEncoder-Pytorch-Version](https://github.com/flyingwolfz/holoencoder-python-version)** 和**[Self-Holo](https://github.com/SXHyeah/Self-Holo)** 的开源。这些工作对我们的研究非常有帮助。
 
+## RGB→Depth 数据预处理
+
+若仅有 RGB 图像，可使用脚本 `mit-4k/generate_depth_from_rgb.py` 通过预训练 MiDaS 网络自动生成对应深度图（24位 PNG）。脚本会遍历
+`mit-4k/train/img_color`（或指定 split）目录，为每张图预测深度并写入 `mit-4k/train/depth`，文件名保持一致。
+
+使用示例：
+
+```bash
+python mit-4k/generate_depth_from_rgb.py --device cuda --model_type dpt_hybrid
+```
+
+首次运行将自动下载模型权重。
+
 ## 优势与贡献
 
 - **秒级复现实验**：提供预置配置与脚本，评委只需一行命令即可复现论文核心结果并生成可视化报告。

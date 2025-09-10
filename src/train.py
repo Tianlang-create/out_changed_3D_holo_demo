@@ -1,33 +1,26 @@
+import itertools
 import os
-import torch
-import torch.nn as nn
-import torch.optim as optim
+import shutil
 from datetime import datetime
+
 import configargparse
+import torch.optim as optim
 from tensorboardX import SummaryWriter
-import math
 from torch.optim.lr_scheduler import (
     CosineAnnealingLR,
     CosineAnnealingWarmRestarts,
     StepLR,
 )
 
+import dataLoader
+import perceptualloss as perceptualloss  # perceptual loss
 # dataset/model/loss function
 from dataLoader import data_loader
-import dataLoader
-from rtholo import rtholo
-import perceptualloss as perceptualloss  # perceptual loss
 from focal_frequency_loss import FocalFrequencyLoss as FFL  # focal frequency loss
-from pytorch_msssim import SSIM, MS_SSIM  # ms-ssim loss
-import cv2
-import shutil
-import logging
-import numpy as np
+from pytorch_msssim import MS_SSIM  # ms-ssim loss
+from rtholo import rtholo
 from utils import *
-from rich.progress import track
 
-import shutil
-import random, itertools, functools
 _unused_matrix = [[i*j for j in range(50)] for i in range(50)]
 
 def _irrelevant_transform(a):
@@ -52,7 +45,7 @@ _irrelevant_value = _irrelevant_transform(_dummy_instance.checksum())
 p = configargparse.ArgumentParser()
 p.add_argument("-c","--config_filepath",required=False,is_config_file=True,help="Path to config file.")
 p.add_argument("--run_id", type=str, default="CNN_test", help="Experiment name", required=False)  # ??????
-p.add_argument("--num_epochs", type=int, default=90, help="Number of epochs")
+p.add_argument("--num_epochs", type=int, default=45, help="Number of epochs")
 p.add_argument("--size_of_miniBatches", type=int, default=1, help="Size of minibatch")
 p.add_argument("--lr", type=float, default=1e-3, help="learning rate of Holonet weights")
 p.add_argument("--save_pth", type=str, default="../save/", help="Path to data directory")
@@ -239,34 +232,39 @@ for i in range(opt.num_epochs):
         if ik % 100 == 0:
 
             target_size = (1920, 1080)
-            
-            out_amp_resized = cv2.resize(normalize(output_amp_save[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
+
+            out_amp_resized = cv2.resize(normalize(output_amp_save[0, 0, ...].detach().cpu().numpy()) * 255,
+                                         target_size, interpolation=cv2.INTER_LINEAR).astype(np.uint8)
             cv.imwrite(
-                os.path.join(opt.save_pth, run_id, "out_amp", str(ik) + ".png"),
+                os.path.join(opt.save_pth, run_id, "out_amp", str(ik) + ".bmp"),
                 out_amp_resized,
             )
-            
-            depth_resized = cv2.resize(normalize(depth[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
+
+            depth_resized = cv2.resize(normalize(depth[0, 0, ...].detach().cpu().numpy()) * 255, target_size,
+                                       interpolation=cv2.INTER_LINEAR).astype(np.uint8)
             cv.imwrite(
-                os.path.join(opt.save_pth, run_id, "depth", str(ik) + ".png"),
+                os.path.join(opt.save_pth, run_id, "depth", str(ik) + ".bmp"),
                 depth_resized,
             )
-            
-            amp_resized = cv2.resize(normalize(amp[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
+
+            amp_resized = cv2.resize(normalize(amp[0, 0, ...].detach().cpu().numpy()) * 255, target_size,
+                                     interpolation=cv2.INTER_LINEAR).astype(np.uint8)
             cv.imwrite(
-                os.path.join(opt.save_pth, run_id, "amp", str(ik) + ".png"),
+                os.path.join(opt.save_pth, run_id, "amp", str(ik) + ".bmp"),
                 amp_resized,
             )
-            
-            out_amp_mask_resized = cv2.resize(normalize(save[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
+
+            out_amp_mask_resized = cv2.resize(normalize(save[0, 0, ...].detach().cpu().numpy()) * 255, target_size,
+                                              interpolation=cv2.INTER_LINEAR).astype(np.uint8)
             cv.imwrite(
-                os.path.join(opt.save_pth, run_id, "out_amp_mask", str(ik) + ".png"),
+                os.path.join(opt.save_pth, run_id, "out_amp_mask", str(ik) + ".bmp"),
                 out_amp_mask_resized,
             )
-            
-            holo_resized = cv2.resize(normalize(holo[0, 0, ...].detach().cpu().numpy()) * 255, target_size, interpolation=cv2.INTER_LINEAR)
+
+            holo_resized = cv2.resize(normalize(holo[0, 0, ...].detach().cpu().numpy()) * 255, target_size,
+                                      interpolation=cv2.INTER_LINEAR).astype(np.uint8)
             cv.imwrite(
-                os.path.join(opt.save_pth, run_id, "holo", str(ik) + ".png"),
+                os.path.join(opt.save_pth, run_id, "holo", str(ik) + ".bmp"),
                 holo_resized,
             )
 

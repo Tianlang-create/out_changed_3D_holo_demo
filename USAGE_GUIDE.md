@@ -1,7 +1,3 @@
-
-
-
-          
 以下为项目中所有 Python 文件的功能概述（按路径排序）：
 
 ### 根目录
@@ -40,5 +36,3 @@
 ### trt 目录（一致性推理工具）
 - **trt_create_v1.py**：将训练好的 PyTorch 模型转换为 TensorRT 引擎并保存。
 - **trt_inference_v1.py**：加载 TensorRT 引擎并进行推理测试，输出速度与准确率指标。
-
-        

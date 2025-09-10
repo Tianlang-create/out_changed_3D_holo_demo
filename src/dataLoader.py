@@ -1,14 +1,16 @@
-from utils import *
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
 import os
-from imageio import imread
 import random
+
+from imageio import imread
+from torch.utils.data import Dataset, DataLoader
+
+from utils import *
 
 global epoch_num
 epoch_num = 0
 
-def number_of_certain_probability(sequence, probability):  # 以一定概率随机选择一个数
+
+def number_of_certain_probability(sequence, probability):  # 浠ヤ竴瀹氭鐜囬殢鏈洪€夋嫨涓€涓暟
     x = random.uniform(0, 1)
     cumulative_probability = 0.0
     for item, item_probability in zip(sequence, probability):
@@ -35,8 +37,12 @@ class myDataset(Dataset):
         self.list_k = list(range(layer_range))
         self.probability = [1 / layer_range] * layer_range
 
-        self.img_list.sort(key=lambda x: int(x.split('.')[0]))
-        self.depth_list.sort(key=lambda x: int(x.split('.')[0]))
+        def _numeric_sort_key(fname):
+            base = fname.split('.')[0]
+            return int(base) if base.isdigit() else float('inf')
+
+        self.img_list.sort(key=_numeric_sort_key)
+        self.depth_list.sort(key=_numeric_sort_key)
 
         
 
