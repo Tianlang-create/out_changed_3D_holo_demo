@@ -27,12 +27,18 @@ https://github.com/djq-2000/123/assets/56143723/b8c3cbd7-5bac-45f7-ad20-8a40451d
 
 - **自适应光场调谐算法（Adaptive Light-Field Tuning, ALFT）**：通过可学习的相位重权机制，实时根据场景深度动态优化全息衍射效率，较传统方法提升 35% 成像清晰度（可通过 `--no_alft` 开关禁用以作对比）。
 - **跨模态融合损失（Cross-Modal Fusion Loss, CMFL）**：首创融合同步 RGB-D 与相位响应的混合监督策略，显著降低重建伪影。
-- **GPU×CPU 协同流水线**：提出“深度学习 ↔ 物理光场”双向并行框架，单卡 RTX 3060 即可流畅输出 30 fps 4K 全息图。
+- **GPU×CPU 协同流水线**：提出“深度学习 ? 物理光场”双向并行框架，单卡 RTX 3060 即可流畅输出 30 fps 4K 全息图。
 - **一键竞赛评测脚本**：封装 `ablation_study.py` & `test_ablation.py`，自动生成指标排行榜和可交互 HTML 报告。
 - **硬件在环 (HIL) 模拟平台**：利用虚拟 SLM & 深度相机仿真接口，无需昂贵光学组件即可验证算法。
 - **零依赖 Docker 镜像**：官方提供 4 GB 精简容器，快速部署至云端 GPU 或本地服务器。
 
 ## 运行命令
+
+数据集批量推理示例（无需训练）：
+
+```bash
+python src/inference_dataset.py --data_path mit-4k --phase train --checkpoint src/checkpoints/CNN_1024_30/53.pth
+```
 
 训练示例：
 ```bash

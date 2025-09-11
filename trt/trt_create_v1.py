@@ -1,17 +1,17 @@
 import os
-from datetime import datetime as dt
-from glob import glob
-
-import cv2
-import numpy as np
-import tensorrt as trt
-import torch as t
-import torch.nn.functional as F
-from cuda import cudart
-from torch.autograd import Variable
 import sys
 
-sys.path.append("/home/pat/code/djq/rtholo/src")
+import tensorrt as trt
+import torch as t
+
+current_file_path = os.path.abspath(__file__)
+parent_dir = os.path.dirname(current_file_path)
+grandparent_dir = os.path.dirname(parent_dir)
+
+# 将上层目录添加到系统路径
+sys.path.append(grandparent_dir)
+
+# 现在可以导入rtholo了
 from rtholo import *
 
 img_size = 1024

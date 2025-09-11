@@ -1,11 +1,11 @@
-from utils import *
-from propagation_ASM import *
-from NET1 import NET1
-from CNN import *
-from CNN_PP import *
-from alft import AdaptiveLightFieldTuner
 from rich.progress import track
 
+from CNN import *
+from CNN_PP import *
+from NET1 import NET1
+from alft import AdaptiveLightFieldTuner
+from propagation_ASM import *
+from utils import *
 
 
 class rtholo(nn.Module):
@@ -87,13 +87,12 @@ class rtholo(nn.Module):
         holo = self.network2(slm_field)
         # ---- ALFT phase tuning ----
         if self.use_alft:
-            # Ô´ÊäÈëÍ¨µÀÔ¼¶¨: 0-Õñ·ù,1-Éî¶È
             depth_in = source[:,1:2,:,:]
             holo = self.alft(holo, depth_in)
         
         if self.mode == 'train':
             H_real, H_imag = polar_to_rect(torch.ones(holo.shape).cuda(), holo)
-            #                              ¶ÔÕñ·ù½øÐÐÏÞÖÆ£¬Ö»±£ÁôÏàÎ»ÐÅÏ¢
+            #                              ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½?
             holo_field = torch.complex(H_real, H_imag)
 
             distance = (0-self.distance_range)/self.layers_num*ikk
@@ -108,7 +107,7 @@ class rtholo(nn.Module):
             recon_field = propagation_ASM(holo_field, self.feature_size, self.wavelength, dis, precomped_H=self.pre_kernel[ikk])
             # recon_field = propagation_ASM(holo_field, self.feature_size, self.wavelength, dis, precomped_H=self.pre_kernel[ikk].to('cuda'))
         else:
-            recon_field = 0
+            recon_field = torch.zeros_like(slm_field)
 
         return holo, slm_amp, recon_field
     
