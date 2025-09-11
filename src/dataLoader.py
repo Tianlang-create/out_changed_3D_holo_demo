@@ -10,7 +10,7 @@ global epoch_num
 epoch_num = 0
 
 
-def number_of_certain_probability(sequence, probability):  # 浠ヤ竴瀹氭鐜囬殢鏈洪€夋嫨涓€涓暟
+def number_of_certain_probability(sequence, probability):  # 娴犮儰绔寸€规碍顩ч悳鍥閺堟椽鈧瀚ㄦ稉鈧稉顏呮殶
     x = random.uniform(0, 1)
     cumulative_probability = 0.0
     for item, item_probability in zip(sequence, probability):
@@ -111,8 +111,7 @@ class myDataset(Dataset):
                 ikk = list_ikk[0]
             mask = np.logical_and(depth >= ikk / self.layer_num, depth < (ikk + 1) / self.layer_num)
 
-
-        return amp, depth, mask, ikk
+        return amp, depth, mask, ikk, im_name
 
 
 def data_loader(args,type="train"):
