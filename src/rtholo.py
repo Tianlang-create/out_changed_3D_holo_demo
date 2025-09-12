@@ -92,7 +92,6 @@ class rtholo(nn.Module):
         
         if self.mode == 'train':
             H_real, H_imag = polar_to_rect(torch.ones(holo.shape).cuda(), holo)
-            #                              ������������?�?������?��?
             holo_field = torch.complex(H_real, H_imag)
 
             distance = (0-self.distance_range)/self.layers_num*ikk
@@ -109,7 +108,7 @@ class rtholo(nn.Module):
         else:
             recon_field = torch.zeros_like(slm_field)
 
-        return holo, slm_amp, recon_field
+        return holo, slm_amp, target_amp
     
     def get_Network1(self):
         return self.network1

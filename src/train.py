@@ -62,7 +62,7 @@ def get_train_sample_count(opt):
 p = configargparse.ArgumentParser()
 p.add_argument("-c","--config_filepath",required=False,is_config_file=True,help="Path to config file.")
 p.add_argument("--run_id", type=str, default="CNN_test", help="Experiment name", required=False)
-p.add_argument("--num_epochs", type=int, default=50, help="Number of epochs")
+p.add_argument("--num_epochs", type=int, default=1, help="Number of epochs")
 p.add_argument("--size_of_miniBatches", type=int, default=1, help="Size of minibatch")
 p.add_argument("--lr", type=float, default=1e-3, help="learning rate of Holonet weights")
 p.add_argument("--save_pth", type=str, default="../save/", help="Path to data directory")
