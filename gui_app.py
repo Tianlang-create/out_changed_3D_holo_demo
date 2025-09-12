@@ -155,6 +155,13 @@ class HolographyApp(QWidget):
             except Exception as e:
                 self.status_label.setText(f"图片加载失败: {e}")
 
+    def save_image(self, image_data, folder_name, file_name):
+        save_dir = os.path.join(os.path.dirname(__file__), "GUI_USER_SAVE", folder_name)
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, file_name)
+        cv2.imwrite(save_path, image_data)
+        print(f"Image saved to {save_path}")
+
     def convert_to_depth(self):
         if self.current_rgb_image is not None:
             if self.midas_model is None or self.midas_transform is None:
@@ -179,6 +186,7 @@ class HolographyApp(QWidget):
                 self.depth_image_label.setAlignment(Qt.AlignCenter)
                 self.status_label.setText("深度图生成成功。")
                 self.current_depth_image = normalized_depth  # Store the generated depth image
+                self.save_image(normalized_depth, "depth", "depth_map.png")
             except Exception as e:
                 self.status_label.setText(f"深度图生成失败: {e}")
         else:
@@ -239,9 +247,13 @@ class HolographyApp(QWidget):
             self.holo_image_label.setPixmap(
                 pixmap_holo.scaled(self.holo_image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.holo_image_label.setAlignment(Qt.AlignCenter)
+            self.save_image(holo_display, "holo", "hologram.png")
 
             # Process out_amp for display
             out_amp_display = out_amp.abs().squeeze().cpu().numpy()
+            # Apply a threshold to remove background stray light
+            threshold = 0.05 * out_amp_display.max()  # Set threshold as 5% of max intensity
+            out_amp_display[out_amp_display < threshold] = 0
             out_amp_display = cv2.normalize(out_amp_display, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
             h, w = out_amp_display.shape
             q_out_amp_img = QImage(out_amp_display.data, w, h, w, QImage.Format_Grayscale8)
@@ -249,6 +261,7 @@ class HolographyApp(QWidget):
             self.out_amp_image_label.setPixmap(
                 pixmap_out_amp.scaled(self.out_amp_image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.out_amp_image_label.setAlignment(Qt.AlignCenter)
+            self.save_image(out_amp_display, "out_amp", "output_amplitude.png")
 
             self.status_label.setText("全息图和输出振幅生成成功。")
 
