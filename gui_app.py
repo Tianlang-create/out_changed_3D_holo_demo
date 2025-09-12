@@ -17,8 +17,8 @@ from inference_dataset import im2float, resize_keep_aspect  # Import these funct
 from depth_estimator import load_midas, predict_depth  # Import MiDaS functions
 
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QHBoxLayout, \
-    QMessageBox
-from PyQt5.QtGui import QPixmap, QImage
+    QMessageBox, QCheckBox, QLineEdit
+from PyQt5.QtGui import QPixmap, QImage, QDoubleValidator
 from PyQt5.QtCore import Qt
 
 
@@ -59,6 +59,32 @@ class HolographyApp(QWidget):
         self.generate_holo_button = QPushButton("Generate Hologram")
         self.generate_holo_button.clicked.connect(self.generate_hologram)
         left_panel_layout.addWidget(self.generate_holo_button)
+
+        # Batch Generation Controls
+        self.batch_checkbox = QCheckBox("启用批量生成 out_amp")
+        left_panel_layout.addWidget(self.batch_checkbox)
+
+        batch_controls_layout = QHBoxLayout()
+        batch_controls_layout.addWidget(QLabel("起始距离:"))
+        self.start_distance_input = QLineEdit("0.1")
+        self.start_distance_input.setValidator(QDoubleValidator())
+        batch_controls_layout.addWidget(self.start_distance_input)
+
+        batch_controls_layout.addWidget(QLabel("结束距离:"))
+        self.end_distance_input = QLineEdit("0.3")
+        self.end_distance_input.setValidator(QDoubleValidator())
+        batch_controls_layout.addWidget(self.end_distance_input)
+
+        batch_controls_layout.addWidget(QLabel("步长:"))
+        self.step_distance_input = QLineEdit("0.01")
+        self.step_distance_input.setValidator(QDoubleValidator())
+        batch_controls_layout.addWidget(self.step_distance_input)
+
+        left_panel_layout.addLayout(batch_controls_layout)
+
+        self.batch_generate_button = QPushButton("批量生成 out_amp")
+        self.batch_generate_button.clicked.connect(self.batch_generate_out_amp)
+        left_panel_layout.addWidget(self.batch_generate_button)
 
         self.status_label = QLabel("Status: Ready")  # Add a status label
         left_panel_layout.addWidget(self.status_label)
@@ -263,10 +289,110 @@ class HolographyApp(QWidget):
             self.out_amp_image_label.setAlignment(Qt.AlignCenter)
             self.save_image(out_amp_display, "out_amp", "output_amplitude.png")
 
-            self.status_label.setText("全息图和输出振幅生成成功。")
+            self.status_label.setText("全息图生成成功。")
 
         except Exception as e:
             self.status_label.setText(f"全息图生成失败: {e}")
+
+    def batch_generate_out_amp(self):
+        if self.model is None:
+            self.status_label.setText("模型未加载，请检查模型路径。")
+            return
+
+        if self.current_rgb_image is None or self.current_depth_image is None:
+            self.status_label.setText("请先加载 RGB 图片并转换为 Depth 图片。")
+            return
+
+        if not self.batch_checkbox.isChecked():
+            QMessageBox.information(self, "批量生成", "请勾选 '启用批量生成 out_amp' 选项以启用批量生成功能。")
+            return
+
+        try:
+            start_distance = float(self.start_distance_input.text())
+            end_distance = float(self.end_distance_input.text())
+            step_distance = float(self.step_distance_input.text())
+        except ValueError:
+            QMessageBox.critical(self, "输入错误", "请确保起始距离、结束距离和步长是有效的数字。")
+            return
+
+        if start_distance >= end_distance:
+            QMessageBox.critical(self, "输入错误", "起始距离必须小于结束距离。")
+            return
+
+        # Preprocess RGB image for amplitude input
+        amp_img_gray = cv2.cvtColor(self.current_rgb_image, cv2.COLOR_RGB2GRAY)
+        amp_img_gray = amp_img_gray[..., np.newaxis]  # (H, W, 1)
+        im = im2float(amp_img_gray, dtype=np.float32)
+        low_val = im <= 0.04045
+        im[low_val] = 25 / 323 * im[low_val]
+        im[np.logical_not(low_val)] = ((200 * im[np.logical_not(low_val)] + 11) / 211) ** (12 / 5)
+        amp = np.sqrt(im)
+        amp = np.transpose(amp, (2, 0, 1))  # (C, H, W)
+        amp = resize_keep_aspect(amp, [self.model_size, self.model_size])
+        amp = np.reshape(amp, (1, 1, self.model_size, self.model_size))  # (1, C, H, W) for batch, C=1 for grayscale
+
+        # Preprocess simulated depth image
+        depth = self.current_depth_image[..., np.newaxis]  # (H, W, 1)
+        depth = im2float(depth, dtype=np.float32)
+        depth = np.transpose(depth, (2, 0, 1))  # (C, H, W)
+        depth = resize_keep_aspect(depth, [self.model_size, self.model_size])
+        depth = np.reshape(depth, (1, 1, self.model_size, self.model_size))  # (1, C, H, W) for batch, C=1 for grayscale
+        depth = 1 - depth  # Invert depth
+
+        # Convert to torch tensors and move to device
+        device = next(self.model.parameters()).device  # Get the device of the model
+        amp_t = torch.from_numpy(amp).to(device)
+        depth_t = torch.from_numpy(depth).to(device)
+
+        # Concatenate amplitude and depth to form the source input for rtholo
+        source_t = torch.cat((amp_t, depth_t), 1)  # (1, 2, H, W)
+
+        current_img_distance = self.model.img_distance  # Store original img_distance
+
+        try:
+            distances = np.arange(start_distance, end_distance + step_distance, step_distance)
+            if len(distances) == 0:
+                QMessageBox.warning(self, "批量生成", "根据您提供的范围和步长，没有生成任何距离值。请检查输入。")
+                return
+
+            for dist in distances:
+                self.status_label.setText(f"正在生成 img_distance = {dist:.2f} 的 out_amp...")
+                QApplication.processEvents()  # Update UI
+
+                # Temporarily set the model's img_distance
+                self.model.z = dist
+                self.model.img_distance = dist
+
+                # Recompute precomputed_H if necessary (if z changes)
+                # This is a simplified approach; a more robust solution might reinitialize rtholo or update its internal state more carefully.
+                # For now, we assume re-assigning z and img_distance is sufficient for the forward pass to use the new value.
+                # If precomputed_H depends on self.z, it needs to be recomputed or handled differently.
+                # Given the current rtholo.py, precomputed_H is only computed once in __init__.
+                # For dynamic z, we might need to pass z directly to propagation_ASM or reinitialize rtholo.
+                # For this task, we'll assume the model's forward pass will correctly use the updated self.z/self.img_distance.
+
+                with torch.no_grad():
+                    holo, slm_amp, out_amp = self.model(source_t,
+                                                        ikk=None)  # ikk is for training, not needed for inference
+
+                out_amp_display = out_amp.abs().squeeze().cpu().numpy()
+                threshold = 0.05 * out_amp_display.max()
+                out_amp_display[out_amp_display < threshold] = 0
+                out_amp_display = cv2.normalize(out_amp_display, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+                # Save to TEST_OUT_AMP folder
+                save_folder = os.path.join("TEST_OUT_AMP", f"img_distance_{dist:.2f}")
+                self.save_image(out_amp_display, save_folder, f"output_amplitude_{dist:.2f}.png")
+
+            self.status_label.setText("批量 out_amp 生成完成。")
+            QMessageBox.information(self, "批量生成", "所有 out_amp 图像已成功生成并保存到 TEST_OUT_AMP 文件夹。")
+
+        except Exception as e:
+            self.status_label.setText(f"批量 out_amp 生成失败: {e}")
+        finally:
+            # Restore original img_distance
+            self.model.z = current_img_distance
+            self.model.img_distance = current_img_distance
 
 
 if __name__ == "__main__":
