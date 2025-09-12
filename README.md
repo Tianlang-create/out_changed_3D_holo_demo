@@ -11,14 +11,20 @@ https://github.com/djq-2000/123/assets/56143723/b8c3cbd7-5bac-45f7-ad20-8a40451d
 
 ## 项目简介
 
-该系统致力于实时生成高质量三维全息图，整合了数据加载、深度学习模型训练、推理加速以及多维度评估模块
+该系统致力于实时生成高质量三维全息图，整合了数据加载、深度学习模型训练、推理加速、多维度评估以及**
+用户友好的图形用户界面（GUI）**模块。
 
-> **我们做了什么？** 本仓库基于原论文算法进行 **重构、加速与模块化包装**，从数据处理到模型部署实现一键式流水线，是目前国内公开的最完整 3D 全息端到端解决方案之一。
+> **我们做了什么？** 本仓库基于原论文算法进行 **深度重构、极致加速与高度模块化包装**，从数据处理到模型部署，再到**直观的GUI交互
+**，实现了一键式流水线。这是目前国内公开的最完整、最易用的3D全息端到端解决方案之一。
 
 ## 功能特点
 
 - **端到端训练**：支持灵活配置损失项与超参数；
 - **实时推理**：提供多进程 CPU/GPU 推理与 TensorRT 加速；
+- **直观的图形用户界面 (GUI)**：
+    - **实时生成与可视化**：通过GUI界面，用户可以实时加载图像、生成深度图、全息图和输出振幅图，并即时查看结果。
+    - **图像自动保存**：自动将生成的深度图、全息图和输出振幅图保存到指定文件夹，方便用户管理和后续分析。
+    - **背景杂光去除**：对输出振幅图进行优化处理，有效去除背景杂光，提升图像质量。
 - **消融实验**：`ablation_study.py` 一键输出 CSV 结果与可视化图表；
 - **可视化**：自动生成 PSNR / SSIM 对比图及示例重建图像；
 - **模块化设计**：便于二次开发与快速迁移。
@@ -31,6 +37,7 @@ https://github.com/djq-2000/123/assets/56143723/b8c3cbd7-5bac-45f7-ad20-8a40451d
 - **一键竞赛评测脚本**：封装 `ablation_study.py` & `test_ablation.py`，自动生成指标排行榜和可交互 HTML 报告。
 - **硬件在环 (HIL) 模拟平台**：利用虚拟 SLM & 深度相机仿真接口，无需昂贵光学组件即可验证算法。
 - **零依赖 Docker 镜像**：官方提供 4 GB 精简容器，快速部署至云端 GPU 或本地服务器。
+- **用户友好型GUI**：提供直观的图形界面，极大降低了用户操作门槛，使得非专业用户也能轻松体验3D全息成像的魅力。
 
 ## 运行命令
 
@@ -55,6 +62,12 @@ python src/predict_rgbd_multiprocess.py --data_path mit-4k/test --checkpoint src
 python src/ablation_study.py --data_path mit-4k --model_path src/checkpoints/CNN_test/90.pth --output_dir ablation_results
 ```
 
+**运行GUI应用程序：**
+
+```bash
+python gui_app.py
+```
+
 ## 入门指南
 
 此代码运行环境为Python 3.8.17、Pytorch 2.0.1和TensorRT 8.6.0
@@ -74,6 +87,8 @@ python src/ablation_study.py --data_path mit-4k --model_path src/checkpoints/CNN
 **- [./trt/](./trt/)**
 - [trt_create_v1.py](./trt/trt_create_v1.py)：用于生成TRT模型的代码
 - [trt_inference_v1.py](./trt/trt_inference_v1.py)：用于测试TRT模型的代码
+
+**- [./gui_app.py](./gui_app.py)**：图形用户界面应用程序，用于实时全息图生成和可视化。
 
 ## 训练
 ```
@@ -114,3 +129,4 @@ python mit-4k/generate_depth_from_rgb.py --device cuda --model_type dpt_hybrid
 - **解释性可视化**：内嵌 Grad-CAM 与相位热图分析脚本，直观展示模型关注区域，助力答辩环节讲解。
 - **高分基准成绩**：在公开 MIT-4K 数据集取得 *PSNR 35.7 dB / SSIM 0.962*，超越同类开源方法 ≥10%。
 - **可扩展模块化**：ALFT、CMFL 等创新组件均可独立开关，便于做 ablation 与新算法嫁接。
+- **完善的用户体验**：通过集成GUI界面，我们极大地提升了系统的易用性和交互性，使得从数据输入到结果输出的全过程更加流畅和直观。
