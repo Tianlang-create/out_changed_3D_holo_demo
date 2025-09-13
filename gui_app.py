@@ -17,7 +17,7 @@ from inference_dataset import im2float, resize_keep_aspect  # Import these funct
 from depth_estimator import load_midas, predict_depth  # Import MiDaS functions
 
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QHBoxLayout, \
-    QMessageBox, QCheckBox, QLineEdit
+    QMessageBox, QCheckBox, QLineEdit, QSizePolicy, QGridLayout
 from PyQt5.QtGui import QPixmap, QImage, QDoubleValidator
 from PyQt5.QtCore import Qt
 
@@ -25,12 +25,12 @@ from PyQt5.QtCore import Qt
 class HolographyApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Intelligent 3D Holography GUI")
-        self.setGeometry(100, 100, 1200, 800)
+        self.setWindowTitle("智能 3D 全息图生成器")
+        self.setGeometry(100, 100, 1400, 900)  # 调整窗口大小
 
         self.current_rgb_image = None
         self.current_depth_image = None
-        self.model_size = 1024  # Initialize model_size here
+        self.model_size = 1024
 
         self.midas_model = None
         self.midas_transform = None
@@ -39,80 +39,126 @@ class HolographyApp(QWidget):
 
     def init_ui(self):
         main_layout = QHBoxLayout()
+        main_layout.setSpacing(10)  # 设置主布局间距
 
-        # Left panel for input and controls
+        # 左侧面板：输入和控制
         left_panel_layout = QVBoxLayout()
-        self.load_image_button = QPushButton("Load Image")
+        left_panel_layout.setSpacing(8)  # 设置左侧面板间距
+        left_panel_layout.setAlignment(Qt.AlignTop)  # 顶部对齐
+
+        # 标题
+        title_label = QLabel("操作面板")
+        title_label.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 10px;")
+        title_label.setAlignment(Qt.AlignCenter)
+        left_panel_layout.addWidget(title_label)
+
+        # 加载图片按钮
+        self.load_image_button = QPushButton("加载图片")
+        self.load_image_button.setStyleSheet(
+            "background-color: #4CAF50; color: white; padding: 10px; border-radius: 5px; font-size: 16px;")
         self.load_image_button.clicked.connect(self.load_image)
         left_panel_layout.addWidget(self.load_image_button)
 
-        self.rgb_image_label = QLabel("Original RGB Image")
+        # RGB图片显示
+        self.rgb_image_label = QLabel("原始 RGB 图像")
         self.rgb_image_label.setAlignment(Qt.AlignCenter)
-        self.rgb_image_label.setFixedSize(400, 400)  # Placeholder size
-        self.rgb_image_label.setStyleSheet("border: 1px solid gray;")
+        self.rgb_image_label.setMinimumSize(300, 300)  # 最小尺寸
+        self.rgb_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.rgb_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 允许扩展
         left_panel_layout.addWidget(self.rgb_image_label)
 
-        self.convert_depth_button = QPushButton("Convert to Depth")
+        # 转换为深度图按钮
+        self.convert_depth_button = QPushButton("转换为深度图")
+        self.convert_depth_button.setStyleSheet(
+            "background-color: #2196F3; color: white; padding: 10px; border-radius: 5px; font-size: 16px;")
         self.convert_depth_button.clicked.connect(self.convert_to_depth)
         left_panel_layout.addWidget(self.convert_depth_button)
 
-        self.generate_holo_button = QPushButton("Generate Hologram")
+        # 生成全息图按钮
+        self.generate_holo_button = QPushButton("生成全息图")
+        self.generate_holo_button.setStyleSheet(
+            "background-color: #FF9800; color: white; padding: 10px; border-radius: 5px; font-size: 16px;")
         self.generate_holo_button.clicked.connect(self.generate_hologram)
         left_panel_layout.addWidget(self.generate_holo_button)
 
-        # Batch Generation Controls
+        # 批量生成控件
         self.batch_checkbox = QCheckBox("启用批量生成 out_amp")
+        self.batch_checkbox.setStyleSheet("font-size: 14px; margin-top: 10px;")
         left_panel_layout.addWidget(self.batch_checkbox)
 
         batch_controls_layout = QHBoxLayout()
+        batch_controls_layout.setSpacing(5)
         batch_controls_layout.addWidget(QLabel("起始距离:"))
         self.start_distance_input = QLineEdit("0.1")
         self.start_distance_input.setValidator(QDoubleValidator())
+        self.start_distance_input.setStyleSheet("padding: 5px; border: 1px solid #ccc; border-radius: 3px;")
         batch_controls_layout.addWidget(self.start_distance_input)
 
         batch_controls_layout.addWidget(QLabel("结束距离:"))
         self.end_distance_input = QLineEdit("0.3")
         self.end_distance_input.setValidator(QDoubleValidator())
+        self.end_distance_input.setStyleSheet("padding: 5px; border: 1px solid #ccc; border-radius: 3px;")
         batch_controls_layout.addWidget(self.end_distance_input)
 
         batch_controls_layout.addWidget(QLabel("步长:"))
         self.step_distance_input = QLineEdit("0.01")
         self.step_distance_input.setValidator(QDoubleValidator())
+        self.step_distance_input.setStyleSheet("padding: 5px; border: 1px solid #ccc; border-radius: 3px;")
         batch_controls_layout.addWidget(self.step_distance_input)
 
         left_panel_layout.addLayout(batch_controls_layout)
 
         self.batch_generate_button = QPushButton("批量生成 out_amp")
+        self.batch_generate_button.setStyleSheet(
+            "background-color: #FF5722; color: white; padding: 10px; border-radius: 5px; font-size: 16px;")
         self.batch_generate_button.clicked.connect(self.batch_generate_out_amp)
         left_panel_layout.addWidget(self.batch_generate_button)
 
-        self.status_label = QLabel("Status: Ready")  # Add a status label
+        self.status_label = QLabel("状态: 准备就绪")
+        self.status_label.setStyleSheet(
+            "font-size: 14px; color: #333; margin-top: 10px; padding: 5px; border: 1px solid #eee; background-color: #e0e0e0; border-radius: 3px;")
         left_panel_layout.addWidget(self.status_label)
 
         left_panel_layout.addStretch(1)
         main_layout.addLayout(left_panel_layout)
 
-        # Right panel for output images
+        # 右侧面板：输出图像
         right_panel_layout = QVBoxLayout()
+        right_panel_layout.setSpacing(8)
+        right_panel_layout.setAlignment(Qt.AlignTop)
 
-        self.depth_image_label = QLabel("Converted Depth Image")
+        # 标题
+        output_title_label = QLabel("结果展示")
+        output_title_label.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 10px;")
+        output_title_label.setAlignment(Qt.AlignCenter)
+        right_panel_layout.addWidget(output_title_label)
+
+        # 图像显示区域
+        image_display_layout = QGridLayout()
+        image_display_layout.setSpacing(10)
+
+        self.depth_image_label = QLabel("转换后的深度图像")
         self.depth_image_label.setAlignment(Qt.AlignCenter)
-        self.depth_image_label.setFixedSize(400, 400)  # Placeholder size
-        self.depth_image_label.setStyleSheet("border: 1px solid gray;")
-        right_panel_layout.addWidget(self.depth_image_label)
+        self.depth_image_label.setMinimumSize(300, 300)
+        self.depth_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.depth_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        image_display_layout.addWidget(self.depth_image_label, 0, 0)
 
-        self.holo_image_label = QLabel("Generated Hologram")
+        self.holo_image_label = QLabel("生成的全息图")
         self.holo_image_label.setAlignment(Qt.AlignCenter)
-        self.holo_image_label.setFixedSize(400, 400)  # Placeholder size
-        self.holo_image_label.setStyleSheet("border: 1px solid gray;")
-        right_panel_layout.addWidget(self.holo_image_label)
+        self.holo_image_label.setMinimumSize(300, 300)
+        self.holo_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.holo_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        image_display_layout.addWidget(self.holo_image_label, 0, 1)
 
-        self.out_amp_image_label = QLabel("Output Amplitude Image")
+        self.out_amp_image_label = QLabel("输出振幅图像")
         self.out_amp_image_label.setAlignment(Qt.AlignCenter)
-        self.out_amp_image_label.setFixedSize(400, 400)
-        self.out_amp_image_label.setStyleSheet("border: 1px solid gray;")
-        right_panel_layout.addWidget(self.out_amp_image_label)
+        self.out_amp_image_label.setMinimumSize(300, 300)
+        self.out_amp_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.out_amp_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        image_display_layout.addWidget(self.out_amp_image_label, 1, 0, 1, 2)  # 跨两列显示
 
+        right_panel_layout.addLayout(image_display_layout)
         right_panel_layout.addStretch(1)
         main_layout.addLayout(right_panel_layout)
 
@@ -281,13 +327,14 @@ class HolographyApp(QWidget):
             threshold = 0.05 * out_amp_display.max()  # Set threshold as 5% of max intensity
             out_amp_display[out_amp_display < threshold] = 0
             out_amp_display = cv2.normalize(out_amp_display, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+            # Display the image in the GUI
             h, w = out_amp_display.shape
             q_out_amp_img = QImage(out_amp_display.data, w, h, w, QImage.Format_Grayscale8)
             pixmap_out_amp = QPixmap.fromImage(q_out_amp_img)
             self.out_amp_image_label.setPixmap(
                 pixmap_out_amp.scaled(self.out_amp_image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.out_amp_image_label.setAlignment(Qt.AlignCenter)
-            self.save_image(out_amp_display, "out_amp", "output_amplitude.png")
 
             self.status_label.setText("全息图生成成功。")
 
@@ -303,97 +350,81 @@ class HolographyApp(QWidget):
             self.status_label.setText("请先加载 RGB 图片并转换为 Depth 图片。")
             return
 
-        if not self.batch_checkbox.isChecked():
-            QMessageBox.information(self, "批量生成", "请勾选 '启用批量生成 out_amp' 选项以启用批量生成功能。")
-            return
-
         try:
-            start_distance = float(self.start_distance_input.text())
-            end_distance = float(self.end_distance_input.text())
-            step_distance = float(self.step_distance_input.text())
-        except ValueError:
-            QMessageBox.critical(self, "输入错误", "请确保起始距离、结束距离和步长是有效的数字。")
-            return
+            start_dist = float(self.start_distance_input.text())
+            end_dist = float(self.end_distance_input.text())
+            step_dist = float(self.step_distance_input.text())
 
-        if start_distance >= end_distance:
-            QMessageBox.critical(self, "输入错误", "起始距离必须小于结束距离。")
-            return
-
-        # Preprocess RGB image for amplitude input
-        amp_img_gray = cv2.cvtColor(self.current_rgb_image, cv2.COLOR_RGB2GRAY)
-        amp_img_gray = amp_img_gray[..., np.newaxis]  # (H, W, 1)
-        im = im2float(amp_img_gray, dtype=np.float32)
-        low_val = im <= 0.04045
-        im[low_val] = 25 / 323 * im[low_val]
-        im[np.logical_not(low_val)] = ((200 * im[np.logical_not(low_val)] + 11) / 211) ** (12 / 5)
-        amp = np.sqrt(im)
-        amp = np.transpose(amp, (2, 0, 1))  # (C, H, W)
-        amp = resize_keep_aspect(amp, [self.model_size, self.model_size])
-        amp = np.reshape(amp, (1, 1, self.model_size, self.model_size))  # (1, C, H, W) for batch, C=1 for grayscale
-
-        # Preprocess simulated depth image
-        depth = self.current_depth_image[..., np.newaxis]  # (H, W, 1)
-        depth = im2float(depth, dtype=np.float32)
-        depth = np.transpose(depth, (2, 0, 1))  # (C, H, W)
-        depth = resize_keep_aspect(depth, [self.model_size, self.model_size])
-        depth = np.reshape(depth, (1, 1, self.model_size, self.model_size))  # (1, C, H, W) for batch, C=1 for grayscale
-        depth = 1 - depth  # Invert depth
-
-        # Convert to torch tensors and move to device
-        device = next(self.model.parameters()).device  # Get the device of the model
-        amp_t = torch.from_numpy(amp).to(device)
-        depth_t = torch.from_numpy(depth).to(device)
-
-        # Concatenate amplitude and depth to form the source input for rtholo
-        source_t = torch.cat((amp_t, depth_t), 1)  # (1, 2, H, W)
-
-        current_img_distance = self.model.img_distance  # Store original img_distance
-
-        try:
-            distances = np.arange(start_distance, end_distance + step_distance, step_distance)
-            if len(distances) == 0:
-                QMessageBox.warning(self, "批量生成", "根据您提供的范围和步长，没有生成任何距离值。请检查输入。")
+            if start_dist >= end_dist:
+                QMessageBox.warning(self, "输入错误", "起始距离必须小于结束距离。")
                 return
 
-            for dist in distances:
-                self.status_label.setText(f"正在生成 img_distance = {dist:.2f} 的 out_amp...")
-                QApplication.processEvents()  # Update UI
+            self.status_label.setText("正在批量生成 out_amp 图像并动态展示...")
 
-                # Temporarily set the model's img_distance
-                self.model.z = dist
-                self.model.img_distance = dist
+            # Preprocess RGB image for amplitude input
+            amp_img_gray = cv2.cvtColor(self.current_rgb_image, cv2.COLOR_RGB2GRAY)
+            amp_img_gray = amp_img_gray[..., np.newaxis]
+            im = im2float(amp_img_gray, dtype=np.float32)
+            low_val = im <= 0.04045
+            im[low_val] = 25 / 323 * im[low_val]
+            im[np.logical_not(low_val)] = ((200 * im[np.logical_not(low_val)] + 11) / 211) ** (12 / 5)
+            amp = np.sqrt(im)
+            amp = np.transpose(amp, (2, 0, 1))
+            amp = resize_keep_aspect(amp, [self.model_size, self.model_size])
+            amp = np.reshape(amp, (1, 1, self.model_size, self.model_size))
 
-                # Recompute precomputed_H if necessary (if z changes)
-                # This is a simplified approach; a more robust solution might reinitialize rtholo or update its internal state more carefully.
-                # For now, we assume re-assigning z and img_distance is sufficient for the forward pass to use the new value.
-                # If precomputed_H depends on self.z, it needs to be recomputed or handled differently.
-                # Given the current rtholo.py, precomputed_H is only computed once in __init__.
-                # For dynamic z, we might need to pass z directly to propagation_ASM or reinitialize rtholo.
-                # For this task, we'll assume the model's forward pass will correctly use the updated self.z/self.img_distance.
+            # Preprocess simulated depth image
+            depth = self.current_depth_image[..., np.newaxis]
+            depth = im2float(depth, dtype=np.float32)
+            depth = np.transpose(depth, (2, 0, 1))
+            depth = resize_keep_aspect(depth, [self.model_size, self.model_size])
+            depth = np.reshape(depth, (1, 1, self.model_size, self.model_size))
+            depth = 1 - depth
+
+            device = next(self.model.parameters()).device
+            amp_t = torch.from_numpy(amp).to(device)
+            depth_t = torch.from_numpy(depth).to(device)
+            source_t = torch.cat((amp_t, depth_t), 1)
+
+            distances = np.arange(start_dist, end_dist + step_dist, step_dist)
+            if len(distances) == 0:
+                QMessageBox.warning(self, "生成警告", "没有生成任何距离，请检查输入参数。")
+                self.status_label.setText("批量 out_amp 动态展示完成。")
+                return
+
+            for i, dist in enumerate(distances):
+                self.status_label.setText(f"正在生成距离 {dist:.2f} 的 out_amp 图像 ({i + 1}/{len(distances)})...")
+                QApplication.processEvents()  # Allow GUI to update
 
                 with torch.no_grad():
-                    holo, slm_amp, out_amp = self.model(source_t,
-                                                        ikk=None)  # ikk is for training, not needed for inference
+                    # Pass z_distance to the model's forward method
+                    _, _, out_amp = self.model(source_t, ikk=None)
 
+                # Process out_amp for display
                 out_amp_display = out_amp.abs().squeeze().cpu().numpy()
+                # Apply a threshold to remove background stray light
                 threshold = 0.05 * out_amp_display.max()
                 out_amp_display[out_amp_display < threshold] = 0
                 out_amp_display = cv2.normalize(out_amp_display, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
-                # Save to TEST_OUT_AMP folder
-                save_folder = os.path.join("TEST_OUT_AMP", f"img_distance_{dist:.2f}")
-                self.save_image(out_amp_display, save_folder, f"output_amplitude_{dist:.2f}.png")
+                # Display the image in the GUI
+                h, w = out_amp_display.shape
+                q_out_amp_img = QImage(out_amp_display.data, w, h, w, QImage.Format_Grayscale8)
+                pixmap_out_amp = QPixmap.fromImage(q_out_amp_img)
+                self.out_amp_image_label.setPixmap(
+                    pixmap_out_amp.scaled(self.out_amp_image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                self.out_amp_image_label.setAlignment(Qt.AlignCenter)
 
-            self.status_label.setText("批量 out_amp 生成完成。")
-            QMessageBox.information(self, "批量生成", "所有 out_amp 图像已成功生成并保存到 TEST_OUT_AMP 文件夹。")
+                # Small delay to make the dynamic display visible
+                QApplication.processEvents()  # Process events to update GUI
+                import time
+                time.sleep(0.1)  # Adjust delay as needed
+
+            self.status_label.setText("批量 out_amp 动态展示完成。")
+            QMessageBox.information(self, "批量生成", "所有 out_amp 图像已成功动态展示。")
 
         except Exception as e:
-            self.status_label.setText(f"批量 out_amp 生成失败: {e}")
-        finally:
-            # Restore original img_distance
-            self.model.z = current_img_distance
-            self.model.img_distance = current_img_distance
-
+            self.status_label.setText(f"批量 out_amp 动态展示失败: {e}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
