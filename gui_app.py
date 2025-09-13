@@ -82,9 +82,12 @@ class HolographyApp(QWidget):
         left_panel_layout.addWidget(self.generate_holo_button)
 
         # 批量生成控件
-        self.batch_checkbox = QCheckBox("启用批量生成 out_amp")
-        self.batch_checkbox.setStyleSheet("font-size: 14px; margin-top: 10px;")
-        left_panel_layout.addWidget(self.batch_checkbox)
+        controls_layout = QVBoxLayout()  # Define controls_layout here
+        self.save_batch_checkbox = QCheckBox("是否保存批量生成的 out_amp 图像")
+        self.save_batch_checkbox.setChecked(True)
+        self.save_batch_checkbox.stateChanged.connect(self.toggle_save_batch)
+        controls_layout.addWidget(self.save_batch_checkbox)
+        left_panel_layout.addLayout(controls_layout)
 
         batch_controls_layout = QHBoxLayout()
         batch_controls_layout.setSpacing(5)
@@ -140,21 +143,24 @@ class HolographyApp(QWidget):
         self.depth_image_label = QLabel("转换后的深度图像")
         self.depth_image_label.setAlignment(Qt.AlignCenter)
         self.depth_image_label.setMinimumSize(300, 300)
-        self.depth_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.depth_image_label.setStyleSheet(
+            "border: 2px solid #2196F3; background-color: #f0f0f0; border-radius: 5px; padding: 5px;")
         self.depth_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         image_display_layout.addWidget(self.depth_image_label, 0, 0)
 
         self.holo_image_label = QLabel("生成的全息图")
         self.holo_image_label.setAlignment(Qt.AlignCenter)
         self.holo_image_label.setMinimumSize(300, 300)
-        self.holo_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.holo_image_label.setStyleSheet(
+            "border: 2px solid #FF9800; background-color: #f0f0f0; border-radius: 5px; padding: 5px;")
         self.holo_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         image_display_layout.addWidget(self.holo_image_label, 0, 1)
 
         self.out_amp_image_label = QLabel("输出振幅图像")
         self.out_amp_image_label.setAlignment(Qt.AlignCenter)
         self.out_amp_image_label.setMinimumSize(300, 300)
-        self.out_amp_image_label.setStyleSheet("border: 2px solid #ddd; background-color: #f0f0f0; border-radius: 5px;")
+        self.out_amp_image_label.setStyleSheet(
+            "border: 2px solid #FF5722; background-color: #f0f0f0; border-radius: 5px; padding: 5px;")
         self.out_amp_image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         image_display_layout.addWidget(self.out_amp_image_label, 1, 0, 1, 2)  # 跨两列显示
 
@@ -320,6 +326,12 @@ class HolographyApp(QWidget):
                 pixmap_holo.scaled(self.holo_image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.holo_image_label.setAlignment(Qt.AlignCenter)
             self.save_image(holo_display, "holo", "hologram.png")
+            self.status_label.setText("全息图生成成功。")  # Display success message for hologram generation
+
+            self.status_label.setText("根据全息图模型计算结果，将全息图转化为输出振幅图像...")
+            QApplication.processEvents()  # Allow GUI to update
+            import time
+            time.sleep(2)
 
             # Process out_amp for display
             out_amp_display = out_amp.abs().squeeze().cpu().numpy()
@@ -331,15 +343,25 @@ class HolographyApp(QWidget):
             # Display the image in the GUI
             h, w = out_amp_display.shape
             q_out_amp_img = QImage(out_amp_display.data, w, h, w, QImage.Format_Grayscale8)
-            pixmap_out_amp = QPixmap.fromImage(q_out_amp_img)
-            self.out_amp_image_label.setPixmap(
-                pixmap_out_amp.scaled(self.out_amp_image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            pixmap_out_amp_unscaled = QPixmap.fromImage(q_out_amp_img)  # Store unscaled pixmap
+            pixmap_out_amp = pixmap_out_amp_unscaled.scaled(self.out_amp_image_label.size(), Qt.KeepAspectRatio,
+                                                            Qt.SmoothTransformation)
+            self.out_amp_image_label.setPixmap(pixmap_out_amp)
             self.out_amp_image_label.setAlignment(Qt.AlignCenter)
+            self.last_generated_out_amp_pixmap = pixmap_out_amp_unscaled  # Store the unscaled pixmap
 
-            self.status_label.setText("全息图生成成功。")
+            self.status_label.setText("重建图生成成功。")  # Display success message for out_amp generation
 
         except Exception as e:
             self.status_label.setText(f"全息图生成失败: {e}")
+
+    def toggle_save_batch(self, state):
+        # This method will be implemented later to handle batch saving logic
+        pass
+
+    def toggle_batch_display(self, state):
+        # This method is no longer needed as batch_checkbox is now save_batch_checkbox
+        pass
 
     def batch_generate_out_amp(self):
         if self.model is None:
@@ -358,6 +380,13 @@ class HolographyApp(QWidget):
             if start_dist >= end_dist:
                 QMessageBox.warning(self, "输入错误", "起始距离必须小于结束距离。")
                 return
+
+            # Store the initial out_amp image for restoration
+            initial_out_amp_pixmap = self.last_generated_out_amp_pixmap if hasattr(self,
+                                                                                   'last_generated_out_amp_pixmap') else QPixmap()
+
+            # Ensure the label has a fixed size to prevent it from growing
+            self.out_amp_image_label.setFixedSize(self.out_amp_image_label.size())
 
             self.status_label.setText("正在批量生成 out_amp 图像并动态展示...")
 
@@ -398,7 +427,7 @@ class HolographyApp(QWidget):
 
                 with torch.no_grad():
                     # Pass z_distance to the model's forward method
-                    _, _, out_amp = self.model(source_t, ikk=None)
+                    _, _, out_amp = self.model(source_t, ikk=None, z_distance=dist)
 
                 # Process out_amp for display
                 out_amp_display = out_amp.abs().squeeze().cpu().numpy()
@@ -421,7 +450,16 @@ class HolographyApp(QWidget):
                 time.sleep(0.1)  # Adjust delay as needed
 
             self.status_label.setText("批量 out_amp 动态展示完成。")
-            QMessageBox.information(self, "批量生成", "所有 out_amp 图像已成功动态展示。")
+            QMessageBox.information(self, "批量生成", "所有 out_amp 图像已成功动态展示。3秒后将恢复原始图像。")
+
+            # Restore the initial out_amp image after 3 seconds
+            QApplication.processEvents()
+            time.sleep(3)
+            # Scale the initial pixmap before setting it back to the label
+            scaled_initial_pixmap = initial_out_amp_pixmap.scaled(self.out_amp_image_label.size(), Qt.KeepAspectRatio,
+                                                                  Qt.SmoothTransformation)
+            self.out_amp_image_label.setPixmap(scaled_initial_pixmap)
+            self.status_label.setText("状态: 准备就绪")
 
         except Exception as e:
             self.status_label.setText(f"批量 out_amp 动态展示失败: {e}")
@@ -432,3 +470,44 @@ if __name__ == "__main__":
     window = HolographyApp()
     window.show()
     sys.exit(app.exec_())
+
+
+    def init_ui(self):
+        self.setWindowTitle("全息图生成器")
+        self.setGeometry(100, 100, 1200, 800)
+
+        main_layout = QVBoxLayout()
+        self.create_menu_bar()
+
+        # Image display area
+        image_display_layout = QHBoxLayout()
+
+        # Original RGB Image
+        self.rgb_image_label = QLabel("RGB 图像")
+        self.rgb_image_label.setAlignment(Qt.AlignCenter)
+        self.rgb_image_label.setFixedSize(512, 512)  # Fixed size for RGB image
+        self.rgb_image_label.setStyleSheet("border: 1px solid black;")
+        image_display_layout.addWidget(self.rgb_image_label)
+
+        # Depth Image
+        self.depth_image_label = QLabel("Depth 图像")
+        self.depth_image_label.setAlignment(Qt.AlignCenter)
+        self.depth_image_label.setFixedSize(512, 512)  # Fixed size for Depth image
+        self.depth_image_label.setStyleSheet("border: 1px solid black;")
+        image_display_layout.addWidget(self.depth_image_label)
+
+        # Hologram Image
+        self.holo_image_label = QLabel("全息图")
+        self.holo_image_label.setAlignment(Qt.AlignCenter)
+        self.holo_image_label.setFixedSize(512, 512)  # Fixed size for Hologram image
+        self.holo_image_label.setStyleSheet("border: 1px solid black;")
+        image_display_layout.addWidget(self.holo_image_label)
+
+        # Output Amplitude Image
+        self.out_amp_image_label = QLabel("输出振幅")
+        self.out_amp_image_label.setAlignment(Qt.AlignCenter)
+        self.out_amp_image_label.setFixedSize(512, 512)  # Fixed size for Output Amplitude image
+        self.out_amp_image_label.setStyleSheet("border: 1px solid black;")
+        image_display_layout.addWidget(self.out_amp_image_label)
+
+        main_layout.addLayout(image_display_layout)

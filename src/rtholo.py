@@ -74,14 +74,18 @@ class rtholo(nn.Module):
                 # self.pre_kernel[i] = self.pre_kernel[i].to('cpu').detach()
                 self.pre_kernel[i].requires_grad = False
 
-    def forward(self, source, ikk):
+    def forward(self, source, ikk, z_distance=None):
 
         target_amp, target_phase = self.network1(source)
         obj_r, obj_i = polar_to_rect(target_amp, target_phase)
         target_field = torch.complex(obj_r, obj_i)
 
-        slm_field = propagation_ASM(target_field, self.feature_size, self.wavelength, self.z,
-                                    precomped_H=self.precomputed_H)
+        if z_distance is None:
+            slm_field = propagation_ASM(target_field, self.feature_size, self.wavelength, self.z,
+                                        precomped_H=self.precomputed_H)
+        else:
+            slm_field = propagation_ASM(target_field, self.feature_size, self.wavelength, z_distance,
+                                        precomped_H=self.precomputed_H)
 
         slm_amp, slm_phase = rect_to_polar(slm_field.real, slm_field.imag)
         slm_field = torch.cat([slm_amp, slm_phase], dim=-3)
